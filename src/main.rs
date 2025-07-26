@@ -59,9 +59,30 @@ use hotkey::hotkey;
 mod create_window;
 mod error;
 mod win_info;
+use win_info::{
+    get_window_titles,
+};
+mod fuzzy;
+use fuzzy::fuzzy_match;
 
 fn main() {
-    match hotkey() {
+    match hotkey(|| {
+        let mut input = String::new();
+        println!("Enter Input:");
+        std::io::stdin().read_line(&mut input).expect("Failed to read input");
+        let input = input.trim().to_string();
+        let windows = get_window_titles();
+        let matched = fuzzy_match(input, windows);
+        match matched {
+            Some(win) => println!("Exe name: {}\nHWND: {:?}\nTitle: {}\n",
+                win.exe_name,
+                win.hwnd.0,
+                win.title
+            ),
+            None => println!("No window found.")
+        }
+        println!("-------------------");
+    }) {
         Ok(()) => {
         }
         Err(e) => {
